@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+  nats-server:
+    image: nats:latest
+    ports:
+      - 8222:8222
+
+  gateway:
+    depends_on:
+      - nats-server
+    build: ./gateway
+    ports:
+      - ${GATEWAY_PORT}:${GATEWAY_PORT}
+    volumes:
+      - ./gateway/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:4222
+
+  auth-microservice:
+    depends_on:
+      - nats-server
+    build: ./auth-microservice
+    volumes:
+      - ./auth-microservice/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3004
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=${AUTH_DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+
+  products-microservice:
+    depends_on:
+      - nats-server
+    build: ./products-microservice
+    volumes:
+      - ./products-microservice/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3001
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=file:./dev.db
+
+  orders-microservice:
+    depends_on:
+      - orders-database
+    build: ./orders-microservice
+    volumes:
+      - ./orders-microservice/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3002
+      - DATABASE_URL=postgresql://postgres:postgres@orders-database:5432/orders-database?schema=public
+      - NATS_SERVERS=nats://nats-server:4222
+
+  orders-database:
+    container_name: orders-database
+    image: postgres:16.2
+    restart: always
+    volumes:
+      - ./orders-microservice/postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orders-database
