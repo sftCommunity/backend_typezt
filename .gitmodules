@@ -1,12 +1,6 @@
 [submodule "gateway"]
 	path = gateway
-	url = https://github.com/sftCommunity/gateway.git
-[submodule "products-microservice"]
-	path = products-microservice
-	url = https://github.com/sftCommunity/products-microservice.git
-[submodule "orders-microservice"]
-	path = orders-microservice
-	url = https://github.com/sftCommunity/orders-microservice.git
+	url = https://github.com/sftCommunity/gateway_typezt.git
 [submodule "auth-microservice"]
 	path = auth-microservice
-	url = https://github.com/sftCommunity/auth-microservice.git
+	url = https://github.com/sftCommunity/auth_typezt.git
